@@ -1,0 +1,15 @@
+services:
+  shadowisland-tool:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: shadowisland-tool:latest
+    ports:
+      - "${SHADOWISLAND_PORT:-8765}:8765"
+    volumes:
+      - shadowisland_tool_jobs:/app/jobs
+    restart: unless-stopped
+
+volumes:
+  shadowisland_tool_jobs:
+

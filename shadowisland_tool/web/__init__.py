@@ -1,0 +1,2 @@
+"""Optional FastAPI web service."""
+

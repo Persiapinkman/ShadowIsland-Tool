@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shadowisland-tool"
+version = "0.1.0"
+description = "Standalone ShadowIsland genomic island inference and evidence visualization toolkit"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "ShadowIsland authors" }]
+dependencies = [
+  "numpy>=2.0,<3",
+  "scikit-learn==1.7.2",
+  "biopython>=1.85,<2",
+]
+
+[project.optional-dependencies]
+web = [
+  "fastapi>=0.111",
+  "uvicorn[standard]>=0.30",
+  "python-multipart>=0.0.9",
+]
+torch = [
+  "torch>=2.3",
+]
+
+[project.scripts]
+shadowisland = "shadowisland_tool.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["shadowisland_tool*"]
+
+[tool.setuptools.package-data]
+shadowisland_tool = ["assets/viewer/*"]
+

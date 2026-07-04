@@ -1,0 +1,2 @@
+"""Case-circos viewer assets."""
+

@@ -1,0 +1,4 @@
+##gff-version 3
+sample_contig	RefSeq	gene	5	40	.	+	.	ID=gene1;Name=intA;product=integrase
+sample_contig	RefSeq	CDS	5	40	.	+	0	ID=cds1;product=integrase
+

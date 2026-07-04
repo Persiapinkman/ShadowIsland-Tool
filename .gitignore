@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+runs/
+jobs/*
+!jobs/.gitkeep
+*.zip
+
+# Keep local bundles in this working tree, but avoid committing release artifacts.
+model_bundle/*
+!model_bundle/README.md
+!model_bundle/checksums.txt
+!model_bundle/.gitkeep
