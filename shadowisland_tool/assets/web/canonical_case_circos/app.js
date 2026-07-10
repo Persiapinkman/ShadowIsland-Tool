@@ -156,29 +156,20 @@ function renderTabs() {
   });
 }
 
-function geneEntryFor(caseData) {
-  return (window.REFSEQ_GENES || {})[caseData.accession] || null;
-}
-
-function geneSourceLabel(caseData) {
-  return geneEntryFor(caseData)?.sourceLabel || "RefSeq CDS";
-}
-
 function renderHeader() {
   const caseData = getActiveCase();
   titleEl.textContent = `${caseData.dataset} / ${caseData.accession}`;
-  const geneEntry = geneEntryFor(caseData);
-  const geneNote = geneEntry && geneEntry.genes ? ` ${geneEntry.genes.length} ${geneSourceLabel(caseData)}.` : "";
+  const geneEntry = (window.REFSEQ_GENES || {})[caseData.accession];
+  const geneNote = geneEntry && geneEntry.genes ? ` ${geneEntry.genes.length} RefSeq CDS.` : "";
   subtitleEl.textContent = `${caseData.organism}. Genome ${formatBp(caseData.genomeLength)}. GC ${caseData.genomeGcPct?.toFixed(2) ?? "NA"}%.${geneNote}`;
 }
 
 function renderMetrics() {
   const m = getActiveCase().metrics;
-  const hasTruth = (getActiveCase().tracks.truth || []).length > 0;
   const metrics = [
-    [hasTruth ? "Truth covered" : "Evidence support", formatPct(m.recommendedRecall)],
-    [hasTruth ? "Recommended precision" : "Recommended share", formatPct(m.recommendedPrecision)],
-    [hasTruth ? "Truth overlap" : "Predicted bases", formatBp(m.recommendedOverlapBp)],
+    ["Truth covered", formatPct(m.recommendedRecall)],
+    ["Recommended precision", formatPct(m.recommendedPrecision)],
+    ["Truth overlap", formatBp(m.recommendedOverlapBp)],
     ["Exploratory burden", `${m.lowCount} / ${formatPct(m.lowBpFraction)}`],
     ["Recommended set", `${m.highCount + m.mediumCount}`],
     ["Selection score", m.selectionScore.toFixed(3)],
@@ -214,7 +205,6 @@ function renderControls() {
     });
   });
 
-  const activeGeneSource = geneSourceLabel(getActiveCase());
   legendEl.innerHTML = [
     `
       <span class="legend-item">
@@ -236,7 +226,7 @@ function renderControls() {
         `
           <span class="legend-item">
             <span class="swatch mini cds"></span>
-            ${escapeText(activeGeneSource)} (density)
+            All RefSeq CDS (density)
           </span>
         `,
       ],
@@ -416,12 +406,11 @@ function renderScaffold(caseData, cx, cy) {
 }
 
 function renderRefseqGenes(caseData, cx, cy) {
-  const entry = geneEntryFor(caseData);
+  const entry = (window.REFSEQ_GENES || {})[caseData.accession];
   if (!entry || !entry.genes) return;
   const genomeLength = caseData.genomeLength;
-  const sourceLabel = geneSourceLabel(caseData);
 
-  // Outer ring: every gene feature as a faint dot (whole-genome density).
+  // Outer ring: every RefSeq CDS as a faint dot (whole-genome gene density).
   const baseFrag = document.createDocumentFragment();
   for (const [start, end] of entry.genes) {
     const angle = angleForBp((start + end) / 2, genomeLength);
@@ -452,7 +441,7 @@ function renderRefseqGenes(caseData, cx, cy) {
     });
     dot.style.setProperty("--feature-color", meta.color);
     const title = createSvgEl("title");
-    title.textContent = `${meta.label} | ${sourceLabel} | ${start.toLocaleString()}-${end.toLocaleString()} (${strand === 1 ? "+" : "-"})`;
+    title.textContent = `${meta.label} | ${start.toLocaleString()}-${end.toLocaleString()} (${strand === 1 ? "+" : "-"})`;
     dot.appendChild(title);
     circleEl.appendChild(dot);
   }
@@ -592,8 +581,9 @@ function renderTable() {
       interval.start,
       interval.end,
       interval.conf_tags,
-      interval.evidence_label,
-      interval.conf_evidence_label,
+      interval.atollgen_label,
+      interval.cargo_atollgen_label,
+      interval.conf_atollgen_label,
     ]
       .join(" ")
       .toLowerCase();
@@ -606,9 +596,7 @@ function renderTable() {
       const overlap =
         interval.trackKey === "truth"
           ? "reference"
-          : interval.score != null
-            ? Number(interval.score).toFixed(3)
-            : `${formatBp(interval.truth_overlap_bp || 0)} (${formatPct(interval.truth_overlap_frac || 0)})`;
+          : `${formatBp(interval.truth_overlap_bp || 0)} (${formatPct(interval.truth_overlap_frac || 0)})`;
       return `
         <tr class="${interval.id === selectedIntervalId ? "selected-row" : ""}" data-id="${escapeText(interval.id)}">
           <td><span class="tier-pill" style="--tier-color:${interval.trackColor}">${escapeText(interval.trackLabel)}</span></td>
@@ -616,7 +604,7 @@ function renderTable() {
           <td>${interval.end.toLocaleString()}</td>
           <td>${formatBp(interval.length)}</td>
           <td>${escapeText(overlap)}</td>
-          <td>${escapeText(interval.conf_evidence_label || interval.evidence_label || "NA")}</td>
+          <td>${escapeText(interval.conf_atollgen_label || interval.atollgen_label || "NA")}</td>
           <td>${escapeText(refseq)}</td>
           <td>${escapeText(interval.conf_tags || "")}</td>
         </tr>
@@ -638,9 +626,7 @@ function intervalDetailHtml(interval) {
   const overlap =
     interval.trackKey === "truth"
       ? "Curated positive GI"
-      : interval.score != null
-        ? `Prediction score ${Number(interval.score).toFixed(3)}`
-        : `${formatBp(interval.truth_overlap_bp || 0)} (${formatPct(interval.truth_overlap_frac || 0)})`;
+      : `${formatBp(interval.truth_overlap_bp || 0)} (${formatPct(interval.truth_overlap_frac || 0)})`;
   const refseq =
     interval.refseq_n_genes == null
       ? "NA"
@@ -658,7 +644,7 @@ function intervalDetailHtml(interval) {
       <dt>Coordinates</dt><dd>${interval.start.toLocaleString()}-${interval.end.toLocaleString()}</dd>
       <dt>Length</dt><dd>${formatBp(interval.length)}</dd>
       <dt>Truth overlap</dt><dd>${escapeText(overlap)}</dd>
-      <dt>Evidence label</dt><dd>${escapeText(interval.conf_evidence_label || interval.evidence_label || "NA")}</dd>
+      <dt>AtollGen</dt><dd>${escapeText(interval.conf_atollgen_label || interval.atollgen_label || "NA")}</dd>
       <dt>RefSeq</dt><dd>${escapeText(refseq)}</dd>
       <dt>GC delta</dt><dd>${escapeText(gc)}</dd>
       <dt>Tags</dt><dd>${escapeText(interval.conf_tags || "NA")}</dd>

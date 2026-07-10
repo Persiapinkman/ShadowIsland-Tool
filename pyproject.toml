@@ -34,5 +34,9 @@ where = ["."]
 include = ["shadowisland_tool*"]
 
 [tool.setuptools.package-data]
-shadowisland_tool = ["assets/viewer/*"]
+shadowisland_tool = [
+  "assets/viewer/*",
+  "assets/web/*",
+  "assets/web/canonical_case_circos/*",
+]
 

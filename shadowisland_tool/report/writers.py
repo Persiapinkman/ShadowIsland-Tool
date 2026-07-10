@@ -93,7 +93,7 @@ def write_dict_csv(path: Path, rows: list[dict[str, object]]) -> None:
 def write_report(path: Path, records: list[FastaRecord], intervals: dict[str, list[dict[str, object]]], genes: list[GeneRecord]) -> None:
     lines = ["# ShadowIsland prediction report", ""]
     lines.append(f"- Records: {len(records)}")
-    lines.append(f"- GFF features parsed: {len(genes)}")
+    lines.append(f"- Biological evidence features parsed/generated: {len(genes)}")
     lines.append("")
     for record in records:
         rows = intervals.get(record.accession, [])
@@ -172,11 +172,13 @@ def write_js_payloads(viewer_dir: Path, records: list[FastaRecord], intervals: d
                 "tracks": tracks,
             }
         )
+        rec_genes = sorted(genes_by_acc.get(rec.accession, []), key=lambda item: item.start)
         genes_payload[rec.accession] = {
             "length": genome_len,
+            "sourceLabel": gene_source_label(rec_genes),
             "genes": [
                 [gene.start, gene.end, 1 if gene.strand == "+" else 0, category_code(gene.category)]
-                for gene in sorted(genes_by_acc.get(rec.accession, []), key=lambda item: item.start)
+                for gene in rec_genes
             ],
         }
         gc_payload[rec.accession] = gc_windows(rec.sequence)
@@ -191,6 +193,17 @@ def write_js_payloads(viewer_dir: Path, records: list[FastaRecord], intervals: d
 
 def category_code(category: str) -> int:
     return {"other": 0, "mobility": 1, "virulence": 2, "resistance": 3, "phage": 4, "trna": 5}.get(category, 0)
+
+
+def gene_source_label(genes: list[GeneRecord]) -> str:
+    if not genes:
+        return "Gene evidence"
+    feature_types = {gene.feature_type for gene in genes}
+    if any(feature_type.startswith("reference_") for feature_type in feature_types):
+        return "Packaged RefSeq CDS"
+    if any(feature_type.startswith("auto_") for feature_type in feature_types):
+        return "Auto-predicted ORFs"
+    return "Uploaded GFF3 features"
 
 
 def gc_windows(seq: str) -> list[list[float]]:

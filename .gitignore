@@ -5,6 +5,8 @@ runs/
 jobs/*
 !jobs/.gitkeep
 *.zip
+*.egg-info/
+shadowisland_tool/assets/web/canonical_case_circos/*.pdf
 
 # Keep local bundles in this working tree, but avoid committing release artifacts.
 model_bundle/*

@@ -5,7 +5,8 @@ Standalone ShadowIsland inference and evidence-visualization tool.
 The public release provides the manuscript-version prediction workflow for:
 
 ```text
-FASTA input -> genomic island prediction -> optional GFF3 evidence annotation
+FASTA input -> genomic island prediction -> GFF3 evidence annotation when provided
+            -> FASTA-only ORF/motif evidence scan when GFF3 is omitted
             -> tables, report and circular evidence viewer
 ```
 
@@ -39,6 +40,8 @@ shadowisland serve --host 127.0.0.1 --port 8765
 ```
 
 Then open <http://127.0.0.1:8765>.
+
+If only FASTA is uploaded, the service now automatically runs a built-in bacterial ORF caller plus conservative motif scan to generate putative mobility, phage, resistance and virulence evidence for the circular viewer. Uploading GFF3 is still preferred when curated annotation is available.
 
 ## Docker
 

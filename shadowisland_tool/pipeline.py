@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from .evidence.auto import auto_annotate_records
 from .evidence.gff import annotate_intervals, parse_gff
+from .evidence.reference import packaged_reference_genes
 from .inference.decode import decode_intervals
 from .inference.released_workflow import predict_window_scores
 from .io import parse_fasta
@@ -67,6 +69,12 @@ class ShadowIslandPredictor:
         intervals = decode_intervals(windows)
 
         genes = parse_gff(gff)
+        evidence_source = "uploaded_gff3" if genes else "packaged_reference"
+        if not genes:
+            genes = packaged_reference_genes(records)
+        if not genes:
+            evidence_source = "auto_fasta_orf_motif_scan"
+            genes = auto_annotate_records(records)
         annotate_intervals(intervals, genes)
 
         out_path = Path(out_dir)
@@ -78,8 +86,11 @@ class ShadowIslandPredictor:
             "workflow": "released manuscript prediction workflow",
             "input_fasta": str(input_fasta) if input_fasta else None,
             "input_gff": str(gff) if gff else None,
+            "evidence_source": evidence_source,
+            "n_evidence_features": len(genes),
             "confidence_tier_note": (
-                "Uploaded genomes assign high/medium/low from available GFF/RefSeq-style evidence."
+                "Uploaded genomes assign high/medium/low from uploaded GFF3 evidence when available; "
+                "otherwise ShadowIsland runs a FASTA-only ORF and motif scan for putative biological evidence."
             ),
         }
         write_result_package(out_path, records=records, windows=windows, intervals=intervals, genes=genes, provenance=provenance)

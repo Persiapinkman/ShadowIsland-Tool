@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ShadowIsland Tool</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="kicker">ShadowIsland standalone tool</p>
+          <h1>Upload a bacterial genome and generate circular evidence-viewer outputs.</h1>
+        </div>
+        <a class="doc-link" href="/static/canonical_case_circos/index.html">Open NC_004431 demo</a>
+      </header>
+
+      <section class="panel example-panel" aria-label="NC_004431.1 example circos">
+        <div class="example-copy">
+          <p class="kicker">Example output</p>
+          <h2>NC_004431.1 manuscript case</h2>
+          <dl class="example-stats" aria-label="NC_004431.1 tier summary">
+            <div>
+              <dt>High</dt>
+              <dd>9</dd>
+            </div>
+            <div>
+              <dt>Medium</dt>
+              <dd>4</dd>
+            </div>
+            <div>
+              <dt>Low</dt>
+              <dd>5</dd>
+            </div>
+          </dl>
+          <a class="secondary-button example-link" href="/static/canonical_case_circos/index.html">Open full example</a>
+        </div>
+        <a class="example-figure" href="/static/canonical_case_circos/index.html" aria-label="Open NC_004431.1 full example">
+          <img src="/static/canonical_case_circos/NC_004431.1_circos.svg" alt="NC_004431.1 ShadowIsland circular evidence map" />
+        </a>
+      </section>
+
+      <section class="notice-panel">
+        <strong>Result viewer:</strong>
+        each completed upload writes a self-contained circular evidence viewer under the job result package.
+        Open the viewer link after the job completes to inspect every predicted island, its tier, coordinates,
+        uploaded GFF3 or FASTA-only auto-annotated functional evidence and GC context.
+      </section>
+
+      <section class="workspace">
+        <form id="jobForm" class="panel upload-panel">
+          <div class="panel-head">
+            <h2>Run ShadowIsland prediction</h2>
+            <p>FASTA is required. GFF3 is optional; if omitted, ShadowIsland automatically runs a FASTA-only ORF and motif scan for putative gene/function evidence tracks.</p>
+          </div>
+
+          <label class="file-field">
+            <span>Genome FASTA</span>
+            <input id="fastaInput" name="fasta" type="file" accept=".fa,.fasta,.fna,.txt" required />
+          </label>
+
+          <label class="file-field">
+            <span>Annotation GFF3 optional</span>
+            <input id="gffInput" name="gff" type="file" accept=".gff,.gff3,.txt" />
+          </label>
+
+          <button id="runButton" class="primary-button" type="submit">Run ShadowIsland prediction</button>
+        </form>
+
+        <section class="panel status-panel">
+          <div class="panel-head">
+            <h2>Job status</h2>
+            <p id="statusText">No job submitted.</p>
+          </div>
+
+          <div class="status-meter" aria-hidden="true">
+            <span id="statusFill"></span>
+          </div>
+
+          <dl class="job-meta">
+            <div>
+              <dt>Job ID</dt>
+              <dd id="jobId">-</dd>
+            </div>
+            <div>
+              <dt>Records</dt>
+              <dd id="recordCount">-</dd>
+            </div>
+            <div>
+              <dt>Intervals</dt>
+              <dd id="intervalCount">-</dd>
+            </div>
+          </dl>
+
+          <div class="actions">
+            <a id="viewerLink" class="secondary-button disabled" href="#" aria-disabled="true">Open generated circle viewer</a>
+            <a id="downloadLink" class="secondary-button disabled" href="#" aria-disabled="true">Download result package</a>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel notes-panel">
+        <h2>What the viewer shows</h2>
+        <div class="notes-grid">
+          <p><strong>Circular genome map:</strong> high, medium and low prediction tiers are rendered as clickable circular tracks.</p>
+          <p><strong>Island function detail:</strong> select any arc or table row to view coordinates, score, gene counts, mobility, phage, resistance, virulence, tRNA and confidence tags.</p>
+          <p><strong>Downloadable outputs:</strong> predicted intervals, window probabilities, gene catalog, region summary, provenance, report and viewer assets are packaged with every job.</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

@@ -85,7 +85,7 @@ def annotate_intervals(
                 counts[gene.category] = counts.get(gene.category, 0) + 1
             evidence_classes = sum(1 for key in ("mobility", "virulence", "resistance", "phage", "trna") if counts[key])
             conf_score = evidence_confidence_score(counts, evidence_classes)
-            row["kind"] = "high" if conf_score >= 4 else "medium" if conf_score >= 2 else "low"
+            conf_tier = "high" if conf_score >= 4 else "medium" if conf_score >= 2 else "low"
             row.update(
                 {
                     "refseq_n_genes": len(overlaps),
@@ -102,7 +102,7 @@ def annotate_intervals(
                     "evidence_rich": evidence_classes >= 2,
                     "n_resistance_markers": counts["resistance"],
                     "conf_score": conf_score,
-                    "conf_tier": row["kind"],
+                    "conf_tier": conf_tier,
                     "conf_tags": evidence_confidence_tags(counts, evidence_classes),
                 }
             )
