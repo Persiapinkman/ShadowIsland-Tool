@@ -74,7 +74,8 @@ out/
 ## Model Bundle
 
 Large model files are distributed separately from the git repository. Download
-the manuscript-version model bundle from the release assets and unpack it into:
+the trained model weights from [Hugging Face](https://huggingface.co/Persiapinkman/shadowisland)
+and unpack the manuscript-version model bundle into:
 
 ```text
 model_bundle/paper_model_v1/
